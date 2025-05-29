@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% extends 'base.html' %} {% from 'bootstrap5/form.html' import render_form %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% block title %}Order{% endblock %}
+  </head>
+  {% block content %}
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card p-4 shadow-sm">
+          <h3 class="mb-4 text-center">Inserisci ordine</h3>
+          {{ render_form(form) }}
+        </div>
+        <br>
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('box_recap') }}" class="btn btn-secondary">
+            Riepilogo ordini
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="successModal"
+    tabindex="-1"
+    aria-labelledby="successModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="successModalLabel">
+            Inserimento riuscito
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Chiudi"
+          ></button>
+        </div>
+        <div class="modal-body">L'utente è stato inserito correttamente.</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="goToRecap">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if success %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const modal = new bootstrap.Modal(
+        document.getElementById("successModal")
+      );
+      modal.show();
+
+      document
+        .getElementById("goToRecap")
+        .addEventListener("click", function () {
+          window.location.href = "{{ url_for('box_recap') }}"; // Flask routing
+        });
+    });
+  </script>
+
+  {% endif %} {% endblock %}
+</html>

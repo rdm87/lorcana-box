@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% block title %}RECAP{% endblock %}
+  </head>
+  {% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <h1>INTO THE INKLAND - BOX ORDERS</h1>
+        <br />
+
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">N.ro Box</th>
+                <th scope="col">Pagati</th>
+                <th scope="col">Da Pagare</th>
+                <th scope="col">Totale</th>
+                <th scope="col">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr class="table-dark">
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.box }}</td>
+                <td>{{ user.payd }}</td>
+                <td>
+                  {{ user.topay }}
+                  <a
+                    href="{{ url_for('pay', user_id=user.id) }}"
+                    class="text-warning ms-2"
+                    title="Vai alla pagina di pagamento"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                </td>
+                <td>{{ user.total }}</td>
+                <td>
+                  <a
+                    href="{{ url_for('delete_user', user_id=user.id) }}"
+                    class="text-danger ms-2 delete-btn"
+                    data-user-id="{{ user.id }}"
+                    title="Cancella record"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+            <!-- Modal di conferma cancellazione -->
+  <div
+    class="modal fade"
+    id="confirmDeleteModal"
+    tabindex="-1"
+    aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalLabel">
+            Conferma eliminazione
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Chiudi"
+          ></button>
+        </div>
+        <div class="modal-body">
+          Sei sicuro di voler eliminare questo ordine?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Annulla
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+            Elimina
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+        </div>
+
+        <p><a href="{{ url_for('add_user') }}">Add Order</a></p>
+      </div>
+    </div>
+  </div>
+  <script>
+  let deleteUrl = null;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-btn");
+    const confirmModal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+    deleteButtons.forEach(btn => {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        const userId = this.getAttribute("data-user-id");
+        deleteUrl = "{{ url_for('delete_user', user_id='__USER_ID__') }}".replace("__USER_ID__", userId);
+        confirmModal.show();
+      });
+    });
+
+    confirmDeleteBtn.addEventListener("click", function () {
+      if (deleteUrl) {
+        window.location.href = deleteUrl;
+      }
+    });
+  });
+</script>
+
+  {% endblock %}
+</html>

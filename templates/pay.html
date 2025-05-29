@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+{% extends 'base.html' %} {% from 'bootstrap5/form.html' import render_form %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inserisci Importo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  {% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="container mt-5">
+      <div class="card p-4 shadow">
+        <h3 class="mb-3">Ordine {{ user_data.name }}</h3>
+        <form method="POST" action="{{ url_for('pay') }}" id="payForm">
+          <input type="hidden" name="user_id" value="{{ user_data.id }}" />
+          <div class="mb-3">
+            <label for="importo" class="form-label"
+              >Totale da pagare {{ user_data.topay }} su {{
+              user_data.total}}(€)</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="importo"
+              name="importo"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="0.00"
+              required
+            />
+          </div>
+          <div class="d-flex justify-content-between">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#confirmModal"
+            >
+              Paga
+            </button>
+
+            <a href="{{ url_for('box_recap') }}" class="btn btn-secondary">
+              Riepilogo ordini
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  <!-- Modale di conferma -->
+  <div
+    class="modal fade"
+    id="confirmModal"
+    tabindex="-1"
+    aria-labelledby="confirmModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmModalLabel">Conferma pagamento</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Chiudi"
+          ></button>
+        </div>
+        <div class="modal-body">
+          Sei sicuro di voler procedere con il pagamento?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Annulla
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="confermaPagamento()"
+          >
+            Conferma
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function confermaPagamento() {
+      const importoInput = document.getElementById("importo");
+      const importo = parseFloat(importoInput.value);
+      const massimo = {{ user_data.total|tojson }}; // Passaggio sicuro lato JS
+
+      if (isNaN(importo) || importo <= 0) {
+        alert("L'importo deve essere maggiore di 0.");
+        return;
+      }
+
+      if (importo > massimo) {
+        alert("L'importo non può superare il totale di " + massimo + " €.");
+        return;
+      }
+
+      // Se tutto è valido, invia il form
+      document.querySelector("form").submit();
+    }
+  </script>
+  {% endblock %}
+</html>
