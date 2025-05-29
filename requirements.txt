@@ -7,3 +7,4 @@ SQLAlchemy~=2.0.41
 Flask-Bootstrap~=3.3.7.1
 dotenv~=0.9.9
 python-dotenv~=1.1.0
+gunicorn
