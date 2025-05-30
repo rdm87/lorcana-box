@@ -27,32 +27,35 @@ init_db()
 # --------------------------------------------------------------- #
 # ------------------------- CONTROLLERS ------------------------- #
 # --------------------------------------------------------------- #
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
 ''' Controller che gestisce il pagamento'''
 @app.route("/pay", methods=['GET', 'POST'])
 def pay():
-    if request.args.get("access_key") == ACCESS_KEY:
-        user_id = request.args.get("user_id", type=int)
-        db: Session = next(get_db())
+    user_id = request.args.get("user_id", type=int)
+    db: Session = next(get_db())
+    user_data = db.query(User).filter(User.id == user_id).first()
+
+    if request.method == "POST":
+        user_id = request.form.get("user_id", type=int)
         user_data = db.query(User).filter(User.id == user_id).first()
+        importo_pagato = request.form.get("importo", type=float)
 
-        if request.method == "POST":
-            user_id = request.form.get("user_id", type=int)
-            user_data = db.query(User).filter(User.id == user_id).first()
-            importo_pagato = request.form.get("importo", type=float)
-
-            if user_data.payd + importo_pagato > user_data.total:
-                flash("Importo non valido: supera il totale dovuto.", "danger")
-                return redirect(url_for("pay", user_id=user_id))
-
-            user_data.payd += importo_pagato
-            user_data.topay = user_data.total - user_data.payd
-            db.commit()
-            flash("Pagamento registrato correttamente.", "success")
+        if user_data.payd + importo_pagato > user_data.total:
+            flash("Importo non valido: supera il totale dovuto.", "danger")
             return redirect(url_for("pay", user_id=user_id))
 
-        return render_template("pay.html", user_id=user_id, user_data=user_data)
-    else:
-        return "Forbidden"
+        user_data.payd += importo_pagato
+        user_data.topay = user_data.total - user_data.payd
+        db.commit()
+        flash("Pagamento registrato correttamente.", "success")
+        return redirect(url_for("pay", user_id=user_id))
+
+    return render_template("pay.html", user_id=user_id, user_data=user_data)
 
 
 @app.route("/boxrecap", methods=['GET'])
