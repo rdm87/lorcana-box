@@ -18,6 +18,7 @@ load_dotenv(dotenv_path="./resources/application.properties")
 # --------------------------------------------------------------- #
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+ACCESS_KEY=os.getenv('access_key')
 bootstrap = Bootstrap5(app)
 
 init_db()
@@ -29,26 +30,29 @@ init_db()
 ''' Controller che gestisce il pagamento'''
 @app.route("/pay", methods=['GET', 'POST'])
 def pay():
-    user_id = request.args.get("user_id", type=int)
-    db: Session = next(get_db())
-    user_data = db.query(User).filter(User.id == user_id).first()
-
-    if request.method == "POST":
-        user_id = request.form.get("user_id", type=int)
+    if request.args.get("access_key") == ACCESS_KEY:
+        user_id = request.args.get("user_id", type=int)
+        db: Session = next(get_db())
         user_data = db.query(User).filter(User.id == user_id).first()
-        importo_pagato = request.form.get("importo", type=float)
 
-        if user_data.payd + importo_pagato > user_data.total:
-            flash("Importo non valido: supera il totale dovuto.", "danger")
+        if request.method == "POST":
+            user_id = request.form.get("user_id", type=int)
+            user_data = db.query(User).filter(User.id == user_id).first()
+            importo_pagato = request.form.get("importo", type=float)
+
+            if user_data.payd + importo_pagato > user_data.total:
+                flash("Importo non valido: supera il totale dovuto.", "danger")
+                return redirect(url_for("pay", user_id=user_id))
+
+            user_data.payd += importo_pagato
+            user_data.topay = user_data.total - user_data.payd
+            db.commit()
+            flash("Pagamento registrato correttamente.", "success")
             return redirect(url_for("pay", user_id=user_id))
 
-        user_data.payd += importo_pagato
-        user_data.topay = user_data.total - user_data.payd
-        db.commit()
-        flash("Pagamento registrato correttamente.", "success")
-        return redirect(url_for("pay", user_id=user_id))
-
-    return render_template("pay.html", user_id=user_id, user_data=user_data)
+        return render_template("pay.html", user_id=user_id, user_data=user_data)
+    else:
+        return "Forbidden"
 
 
 @app.route("/boxrecap", methods=['GET'])
