@@ -31,7 +31,15 @@
               <tr class="table-dark">
                 <td>{{ user.id }}</td>
                 <td>{{ user.name }}</td>
-                <td>{{ user.box }}</td>
+                <td>{{ user.box }}
+                  <a
+                    href="{{ url_for('add_box', user_id=user.id) }}"
+                    class="text-warning ms-2"
+                    title="Aggiungi box"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                </td>
                 <td>{{ user.payd }}</td>
                 <td>
                   {{ user.topay }}

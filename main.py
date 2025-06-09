@@ -103,6 +103,31 @@ def delete_user():
     db.commit()
     return redirect(url_for("box_recap"))
 
+@app.route("/addbox", methods=['GET', 'POST'])
+def add_box():
+    user_id = request.args.get("user_id", type=int)
+    db: Session = next(get_db())
+    user_data = db.query(User).filter(User.id == user_id).first()
+
+    if request.method == "POST":
+         user_id = request.form.get("user_id", type=int)
+         box_number = request.form.get("importo", type=int)
+         anticipo = box_number * float(os.getenv('anticipo_da_versare'))
+         user_data = db.query(User).filter(User.id == user_id).first()
+         user_data.box += box_number
+         user_data.payd = user_data.payd + anticipo
+
+         if user_data.box >= 10:
+            user_data.total = user_data.box * float(os.getenv('costo_box_scontato'))
+         else:
+             user_data.total = user_data.box * float(os.getenv('costo_box'))
+
+         user_data.topay = user_data.total - user_data.payd
+         db.commit()
+         flash("Pagamento registrato correttamente.", "success")
+         return redirect(url_for("add_box", user_id=user_id))
+
+    return render_template("add_box.html", user_id=user_id, user_data=user_data)
 
 # --------------------------------------------------------------- #
 # ---------------------------MAIN-------------------------------- #
