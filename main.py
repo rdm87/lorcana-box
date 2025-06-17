@@ -23,10 +23,21 @@ bootstrap = Bootstrap5(app)
 
 init_db()
 
-def update_payment(payed_import):
-    user_id = request.args.get("user_id", type=int)
+def update_payment(order_id, payed_import):
     db: Session = next(get_db())
-    user_data = db.query(User).filter(User.id == user_id).first()
+    user_data = db.query(User).filter(User.id == order_id).first()
+    user_data.topay = user_data.total - user_data.payd
+    db.commit()
+
+def update_total(order_id, box_number):
+    db: Session = next(get_db())
+    user_data = db.query(User).filter(User.id == order_id).first()
+    if box_number < 10:
+        box_cost = float(os.getenv('costo_box'))
+    else:
+        box_cost = float(os.getenv('costo_box_scontato'))
+    total_cost = box_number * box_cost
+    user_data.total = total_cost
     user_data.topay = user_data.total - user_data.payd
     db.commit()
 
@@ -59,7 +70,7 @@ def deposit():
 
         user_data.payd = deposit_payed
         db.commit()
-        update_payment(user_data.payd)
+        update_payment(user_id, user_data.payd)
         flash("Pagamento registrato correttamente.", "success")
         return redirect(url_for("deposit", user_id=user_id))
 
@@ -148,6 +159,7 @@ def add_box():
          user_data = db.query(User).filter(User.id == user_id).first()
          user_data.box += box_number
          db.commit()
+         update_total(user_id, user_data.box)
          flash("Pagamento registrato correttamente.", "success")
          return redirect(url_for("add_box", user_id=user_id))
 
