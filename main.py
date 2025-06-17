@@ -23,6 +23,15 @@ bootstrap = Bootstrap5(app)
 
 init_db()
 
+def update_payment(payed_import):
+    user_id = request.args.get("user_id", type=int)
+    db: Session = next(get_db())
+    user_data = db.query(User).filter(User.id == user_id).first()
+    user_data.topay = user_data.total - user_data.payd
+    db.commit()
+
+
+
 
 # --------------------------------------------------------------- #
 # ------------------------- CONTROLLERS ------------------------- #
@@ -31,6 +40,30 @@ init_db()
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/deposit", methods=['GET', 'POST'])
+def deposit():
+    user_id = request.args.get("user_id", type=int)
+    db: Session = next(get_db())
+    user_data = db.query(User).filter(User.id == user_id).first()
+
+    if request.method == "POST":
+        user_id = request.form.get("user_id", type=int)
+        db: Session = next(get_db())
+        user_data = db.query(User).filter(User.id == user_id).first()
+        deposit_payed = request.form.get("importo", type=float)
+
+        if deposit_payed > user_data.total:
+            flash("Importo non valido: supera il totale dovuto.", "danger")
+            return redirect(url_for("pay", user_id=user_id))
+
+        user_data.payd = deposit_payed
+        db.commit()
+        update_payment(user_data.payd)
+        flash("Pagamento registrato correttamente.", "success")
+        return redirect(url_for("deposit", user_id=user_id))
+
+    return render_template("deposit.html", user_id=user_id, user_data=user_data)
 
 
 ''' Controller che gestisce il pagamento'''
@@ -73,7 +106,7 @@ def add_user():
     form = UserForm()
     if request.method == "POST":
         if form.validate_on_submit():
-            anticipo = form.box_number.data * float(os.getenv('anticipo_da_versare'))
+            anticipo = form.deposit.data
             if form.box_number.data < 10:
                totale = float(os.getenv('costo_box')) * form.box_number.data
             else:
@@ -111,18 +144,9 @@ def add_box():
 
     if request.method == "POST":
          user_id = request.form.get("user_id", type=int)
-         box_number = request.form.get("importo", type=int)
-         anticipo = box_number * float(os.getenv('anticipo_da_versare'))
+         box_number = request.form.get("boxnr", type=int)
          user_data = db.query(User).filter(User.id == user_id).first()
          user_data.box += box_number
-         user_data.payd = user_data.payd + anticipo
-
-         if user_data.box >= 10:
-            user_data.total = user_data.box * float(os.getenv('costo_box_scontato'))
-         else:
-             user_data.total = user_data.box * float(os.getenv('costo_box'))
-
-         user_data.topay = user_data.total - user_data.payd
          db.commit()
          flash("Pagamento registrato correttamente.", "success")
          return redirect(url_for("add_box", user_id=user_id))

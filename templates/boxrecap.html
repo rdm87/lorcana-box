@@ -17,13 +17,13 @@
           <table class="table table-hover table-bordered">
             <thead>
               <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Nome</th>
-                <th scope="col">N.ro Box</th>
-                <th scope="col">Pagati</th>
-                <th scope="col">Da Pagare</th>
-                <th scope="col">Totale</th>
-                <th scope="col">Delete</th>
+                <th scope="col" class="col-1" >ID</th>
+                <th scope="col" class="col-1">Nome</th>
+                <th scope="col" class="col-1">Box Ordinati</th>
+                <th scope="col" class="col-1">Anticipo</th>
+                <th scope="col" class="col-1">Da Pagare</th>
+                <th scope="col" class="col-1">Totale</th>
+                <th scope="col" class="col-1">Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -40,7 +40,15 @@
                     <i class="bi bi-pencil-square"></i>
                   </a>
                 </td>
-                <td>{{ user.payd }}</td>
+                <td>{{ user.payd }}
+                  <a
+                    href="{{ url_for('deposit', user_id=user.id) }}"
+                    class="text-warning ms-2"
+                    title="Vai alla pagina di pagamento"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                </td>
                 <td>
                   {{ user.topay }}
                   <a

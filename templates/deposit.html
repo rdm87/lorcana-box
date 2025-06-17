@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    {% block title %}Aggiungi box{% endblock %}
+    <title>Inserisci Importo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Bootstrap CSS -->
@@ -26,24 +26,20 @@
     <div class="container mt-5">
       <div class="card p-4 shadow">
         <h3 class="mb-3">Ordine {{ user_data.name }}</h3>
-        <form method="POST" action="{{ url_for('add_box') }}" id="payBoxAnticipation">
+        <form method="POST" action="{{ url_for('deposit') }}" id="payForm">
           <input type="hidden" name="user_id" value="{{ user_data.id }}" />
           <div class="mb-3">
-            <label for="boxnr" class="form-label"
-              >Numero di box attualmente acquistati {{ user_data.box }}</label
-            >
-            <br>
-            <label for="boxnr" class="form-label"
-              >Seleziona il numero di box che vuoi aggiungere</label
+            <label for="importo" class="form-label"
+              >Inserisci l'anticipo inviato</label
             >
             <input
               type="number"
               class="form-control"
-              id="boxnr"
-              name="boxnr"
+              id="importo"
+              name="importo"
               step="1"
-              inputmode="integeer"
-              placeholder="0"
+              inputmode="decimal"
+              placeholder="0.00"
               required
             />
           </div>
@@ -109,17 +105,17 @@
 
   <script>
     function confermaPagamento() {
-      const boxnrInput = document.getElementById("boxnr");
-      const boxnr = parseFloat(boxnrInput.value);
+      const importoInput = document.getElementById("importo");
+      const importo = parseFloat(importoInput.value);
       const massimo = {{ user_data.total|tojson }}; // Passaggio sicuro lato JS
 
-      if (isNaN(boxnr) || boxnr <= 0) {
-        alert("L'boxnr deve essere maggiore di 0.");
+      if (isNaN(importo) || importo <= 0) {
+        alert("L'importo deve essere maggiore di 0.");
         return;
       }
 
-      if (boxnr > massimo) {
-        alert("L'boxnr non può superare il totale di " + massimo + " €.");
+      if (importo > massimo) {
+        alert("L'importo non può superare il totale di " + massimo + " €.");
         return;
       }
 
